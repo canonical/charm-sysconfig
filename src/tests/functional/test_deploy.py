@@ -31,6 +31,7 @@ RETRY = tenacity.retry(
 #     await model.disconnect()
 
 
+@pytest.mark.skip(reason="false grub reboot notification. check issue #40")
 async def test_app_deploy(model, app):
     """Verify if the sysconfig app has been successfully deployed."""
     try:
