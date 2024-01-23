@@ -1,13 +1,13 @@
-name: Check workflow running lint checkers, unit and functional tests
+name: Check workflow running linter, unit and functional tests
 
 on:
   workflow_call:
   pull_request:
-    types: [ opened, synchronize, reopened ]
-    branches: [ master, main ]
+    types: [opened, synchronize, reopened]
+    branches: [master, main]
     paths-ignore:
-      - '**.md'
-      - '**.rst'
+      - "**.md"
+      - "**.rst"
 
 jobs:
   lint-unit:
@@ -19,10 +19,9 @@ jobs:
     with:
       python-version: ${{ matrix.python-version }}
       tox-version: "<4"
-      working-directory: "./src"
 
   func:
-    uses: canonical/bootstack-actions/.github/workflows/func.yaml@v2
+    uses: canonical/bootstack-actions/.github/workflows/func.yaml@v3-external-openstack
     needs: lint-unit
     strategy:
       fail-fast: false
@@ -30,7 +29,15 @@ jobs:
       command: "make functional"
       juju-channel: "3.1/stable"
       nested-containers: false
-      provider: "lxd"
       python-version: "3.10"
       timeout-minutes: 120
       tox-version: "<4"
+      action-operator: false
+      external-controller: true
+      runs-on: "['self-hosted', 'runner-sysconfig']"
+      juju-controller: soleng-ci-ctrl
+      zaza-yaml: "LS0tCm1vZGVsX3NldHRpbmdzOgogIGltYWdlLXN0cmVhbTogcmVsZWFzZWQKcmVnaW9uOiBwcm9kc3RhY2s2CmNsb3VkOiBidWlsZGVyLWNsb3VkCmNyZWRlbnRpYWw6IGJ1aWxkZXItY2xvdWQtY3JlZAo="
+    secrets:
+      juju-controllers-yaml: ${{ secrets.JUJU_CONTROLLERS_YAML }}
+      juju-accounts-yaml: ${{ secrets.JUJU_ACCOUNTS_YAML }}
+      openstack-auth-env: ${{ secrets.OPENSTACK_AUTH_ENV }}
