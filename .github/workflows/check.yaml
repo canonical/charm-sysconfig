@@ -19,6 +19,7 @@ jobs:
     with:
       python-version: ${{ matrix.python-version }}
       tox-version: "<4"
+      working-directory: "./src"
 
   func:
     uses: canonical/bootstack-actions/.github/workflows/func.yaml@v3-external-openstack
