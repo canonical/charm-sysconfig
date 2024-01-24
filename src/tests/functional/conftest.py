@@ -56,6 +56,7 @@ async def model(controller):
         model_name,
         cloud_name=os.getenv("PYTEST_CLOUD_NAME"),
         region=os.getenv("PYTEST_CLOUD_REGION"),
+        credential=os.getenv("PYTEST_CLOUD_CREDENTIAL"),
     )
     # https://github.com/juju/python-libjuju/issues/267
     subprocess.check_call(["juju", "models"])

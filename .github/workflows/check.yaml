@@ -37,6 +37,7 @@ jobs:
       external-controller: true
       runs-on: "['self-hosted', 'runner-sysconfig']"
       juju-controller: soleng-ci-ctrl
+      pytest-env: "UFlURVNUX0NMT1VEX05BTUU9YnVpbGRlci1jbG91ZApQWVRFU1RfQ0xPVURfUkVHSU9OPXByb2RzdGFjazYKUFlURVNUX0NMT1VEX0NSRURFTlRJQUw9YnVpbGRlci1jbG91ZC1jcmVkCg=="
       zaza-yaml: "LS0tCm1vZGVsX3NldHRpbmdzOgogIGltYWdlLXN0cmVhbTogcmVsZWFzZWQKcmVnaW9uOiBwcm9kc3RhY2s2CmNsb3VkOiBidWlsZGVyLWNsb3VkCmNyZWRlbnRpYWw6IGJ1aWxkZXItY2xvdWQtY3JlZAo="
     secrets:
       juju-controllers-yaml: ${{ secrets.JUJU_CONTROLLERS_YAML }}
