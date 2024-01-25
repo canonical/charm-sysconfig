@@ -22,7 +22,7 @@ jobs:
       working-directory: "./src"
 
   func:
-    uses: canonical/bootstack-actions/.github/workflows/func.yaml@v3-external-openstack
+    uses: canonical/bootstack-actions/.github/workflows/func.yaml@v3
     needs: lint-unit
     strategy:
       fail-fast: false
