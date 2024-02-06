@@ -18,10 +18,9 @@ name: sysconfig
 summary: System related configurations
 maintainer: BootStack Charmers <bootstack-charmers@lists.canonical.com>
 description: |
-  <DEPRECATION NOTICE>
-
-  This charm is no longer being actively maintained, and will be superseded by
-  the charm library. (https://juju.is/docs/sdk/library-index)
+  This charm is in maintenance mode. Critical bugs will be fixed, but new
+  features will generally not be accepted. Please consider setting system-level
+  configurations via a charm library (https://juju.is/docs/sdk/library-index).
 
   SYSConfig can configure cpufreq governor (ie powersave, performance),
   and CPU Affinity or Kernel's isolcpus details in systemd-sytem.conf
