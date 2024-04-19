@@ -33,8 +33,6 @@ jobs:
       nested-containers: false
       python-version: "3.10"
       timeout-minutes: 120
-      action-operator: false
-      external-controller: true
       runs-on: "['self-hosted', 'runner-sysconfig']"
       juju-controller: soleng-ci-ctrl
       pytest-env: "UFlURVNUX0NMT1VEX05BTUU9YnVpbGRlci1jbG91ZApQWVRFU1RfQ0xPVURfUkVHSU9OPXByb2RzdGFjazYKUFlURVNUX0NMT1VEX0NSRURFTlRJQUw9YnVpbGRlci1jbG91ZC1jcmVkCg=="
