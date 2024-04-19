@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
     with:
       command: "make functional"
-      juju-channel: "3.1/stable"
+      juju-channel: "3.4/stable"
       nested-containers: false
       python-version: "3.10"
       timeout-minutes: 120
