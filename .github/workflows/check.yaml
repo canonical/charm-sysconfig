@@ -26,15 +26,25 @@ jobs:
       working-directory: "./src"
 
   func:
-    uses: canonical/bootstack-actions/.github/workflows/func.yaml@v2
+    uses: canonical/bootstack-actions/.github/workflows/func.yaml@v3
     needs: lint-unit
     strategy:
       fail-fast: false
       matrix:
-        command: ['TEST_JUJU3=1 make functional']  # TEST_JUJU3 needed due https://github.com/openstack-charmers/zaza/blob/b22c2eed4c322f1dfc14ffb2d31e0dd18c911a40/setup.py#L47 to support Juju3+
+        command: ["TEST_JUJU3=1 make functional"]  # TEST_JUJU3 needed due https://github.com/openstack-charmers/zaza/blob/b22c2eed4c322f1dfc14ffb2d31e0dd18c911a40/setup.py#L47 to support Juju3+
+        juju-channel: ["3.4/stable"]
     with:
       command: ${{ matrix.command }}
-      juju-channel: "3.4/stable"
+      juju-channel: ${{ matrix.juju-channel }}
       nested-containers: false
       python-version: "3.10"
       timeout-minutes: 120
+      action-operator: false
+      external-controller: true
+      runs-on: "['self-hosted', 'runner-sysconfig']"
+      juju-controller: soleng-ci-ctrl-34
+      pytest-env: "UFlURVNUX0NMT1VEX05BTUU9YnVpbGRlci1jbG91ZApQWVRFU1RfQ0xPVURfUkVHSU9OPXByb2RzdGFjazYKUFlURVNUX0NMT1VEX0NSRURFTlRJQUw9YnVpbGRlci1jbG91ZC1jcmVkCg=="
+    secrets:
+      juju-controllers-yaml: ${{ secrets.JUJU_CONTROLLERS_YAML }}
+      juju-accounts-yaml: ${{ secrets.JUJU_ACCOUNTS_YAML }}
+      openstack-auth-env: ${{ secrets.OPENSTACK_AUTH_ENV }}
