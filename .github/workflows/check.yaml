@@ -36,7 +36,7 @@ jobs:
     with:
       command: ${{ matrix.command }}
       juju-channel: ${{ matrix.juju-channel }}
-      nested-containers: false
+      nested-containers: true
       provider: "lxd"
       python-version: "3.10"
       timeout-minutes: 120
