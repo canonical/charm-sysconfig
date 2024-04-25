@@ -139,6 +139,7 @@ async def app_with_config(model, series, source):
         application_name=principal_app_with_config_name,
         series=series,
         channel=channel,
+        constraints="cores=4 mem=8G virt-type=virtual-machine",
     )
 
     config = {
