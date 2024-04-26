@@ -95,7 +95,11 @@ async def app(model, series, source, request):
     #     return sysconfig_app
 
     await model.deploy(
-        "ubuntu", application_name=principal_app_name, series=series, channel=channel
+        "ubuntu",
+        application_name=principal_app_name,
+        series=series,
+        channel=channel,
+        constraints="virt-type=virtual-machine",
     )
 
     # If series is 'xfail' force install to allow testing against versions not in
@@ -139,7 +143,7 @@ async def app_with_config(model, series, source):
         application_name=principal_app_with_config_name,
         series=series,
         channel=channel,
-        constraints="cores=4 mem=8G virt-type=virtual-machine",
+        constraints="virt-type=virtual-machine",
     )
 
     config = {
