@@ -17,7 +17,7 @@ PRINCIPAL_APP_NAME = "ubuntu-{}"
 RETRY = tenacity.retry(
     wait=tenacity.wait_exponential(multiplier=1, max=60),
     reraise=True,
-    stop=tenacity.stop_after_attempt(4),
+    stop=tenacity.stop_after_attempt(10),
 )
 
 
