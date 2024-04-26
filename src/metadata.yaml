@@ -17,7 +17,7 @@
 name: sysconfig
 summary: System related configurations
 maintainers:
-  - BootStack Charmers <bootstack-charmers@lists.canonical.com>
+  - Solutions Engineering <solutions-engineering@lists.canonical.com>
 description: |
   This charm is in maintenance mode. Critical bugs will be fixed, but new
   features will generally not be accepted. Please consider setting system-level
