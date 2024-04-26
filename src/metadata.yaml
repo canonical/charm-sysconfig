@@ -16,7 +16,8 @@
 
 name: sysconfig
 summary: System related configurations
-maintainer: BootStack Charmers <bootstack-charmers@lists.canonical.com>
+maintainers:
+  - Solutions Engineering <solutions-engineering@lists.canonical.com>
 description: |
   This charm is in maintenance mode. Critical bugs will be fixed, but new
   features will generally not be accepted. Please consider setting system-level
@@ -32,6 +33,8 @@ tags:
   - performance
   - affinity
   - isolcpus
+docs: https://discourse.charmhub.io/t/sysconfig-docs-index/14039
+source: https://github.com/canonical/charm-sysconfig
 series: []
 subordinate: true
 requires:
