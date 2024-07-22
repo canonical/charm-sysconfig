@@ -123,14 +123,24 @@ def check_update_grub(tmp_output="/tmp/tmp_grub.cfg"):
         message = "Unable to check update-grub: {}".format(err)
     else:
         if not filecmp.cmp("/boot/grub/grub.cfg", tmp_output):
-            update_available = True
-            message = (
-                "Found available grub updates. You can run "
-                "`juju run-action <sysconfig-unit> update-grub` to update grub."
-            )
-        else:
-            update_available = False
-            message = "No available grub updates found."
+            with open(tmp_output) as f:
+                content = f.read()
+
+            blkid_mapping = _get_blkid_mapping()
+
+            content_reformatted = _replace_uuids_with_labels(content, blkid_mapping)
+
+            with open(tmp_output, "w") as f:
+                f.write(content_reformatted)
+
+            if not filecmp.cmp("/boot/grub/grub.cfg", tmp_output):
+                update_available = True
+                message = (
+                    "Found available grub updates. You can run "
+                    "`juju run-action <sysconfig-unit> update-grub` to update grub."
+                )
+            else:
+                message = "No available grub updates found."
     hookenv.log(message, hookenv.DEBUG)
     return update_available, message
 
@@ -146,6 +156,32 @@ def clear_notification():
     unitdata.kv().flush()
     message = "Notifications cleared at {}".format(timestamp.isoformat())
     hookenv.log(message, hookenv.DEBUG)
+
+
+def _get_blkid_mapping():
+    """Fetch the UUID and LABEL mappings using blkid."""
+    blkid_output = subprocess.check_output("blkid", shell=True).decode("utf-8")
+    mapping = {}
+    for line in blkid_output.splitlines():
+        parts = line.split()
+        uuid = None
+        label = None
+        for part in parts[1:]:
+            if part.startswith("UUID="):
+                uuid = part.split("=")[1].strip('"')
+            elif part.startswith("LABEL="):
+                label = part.split("=")[1].strip('"')
+        if uuid and label:
+            mapping[uuid] = label
+    hookenv.log(f"BLKID mapping: {mapping}", hookenv.DEBUG)
+    return mapping
+
+
+def _replace_uuids_with_labels(content, blkid_mapping):
+    """Replace UUIDs in the content with LABELs using the blkid mapping."""
+    for uuid, label in blkid_mapping.items():
+        content = content.replace(f"root=UUID={uuid}", f"root=LABEL={label}")
+    return content
 
 
 class BootResourceState:

@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """Unit tests for SysConfigHelper and BootResourceState classes."""
 import subprocess
+import unittest
 import unittest.mock as mock
 from datetime import datetime, timedelta, timezone
 from tempfile import NamedTemporaryFile
@@ -22,28 +23,105 @@ def test_check_update_grub_error(check_output, cmp_file):
     assert "Unable to check update-grub" in message
 
 
-@mock.patch("filecmp.cmp")
-@mock.patch("lib_sysconfig.subprocess.check_output")
-def test_check_update_grub_available(check_output, cmp_file):
-    """Test check_update_grub function when grub update available."""
-    tmp_output = "/tmp/tmp_grub.cfg"
+class TestCheckUpdateGrub(unittest.TestCase):
+    @mock.patch(
+        "builtins.open", new_callable=mock.mock_open, read_data="original grub content"
+    )
+    @mock.patch("lib_sysconfig.filecmp.cmp")
+    @mock.patch("lib_sysconfig.subprocess.check_output")
+    @mock.patch("lib_sysconfig._get_blkid_mapping")
+    @mock.patch("lib_sysconfig._replace_uuids_with_labels")
+    def test_check_update_grub_available(
+        self,
+        replace_uuids_with_labels,
+        get_blkid_mapping,
+        check_output,
+        cmp_file,
+        mock_open,
+    ):
+        """Test check_update_grub function when grub update is available."""
+        tmp_output = "/tmp/tmp_grub.cfg"
 
-    cmp_file.return_value = False
-    update_available, message = lib_sysconfig.check_update_grub(tmp_output)
-    assert update_available is True
-    assert "Found available grub updates." in message
+        cmp_file.return_value = False
+
+        get_blkid_mapping.return_value = {
+            "b5d8d38f-33ef-49e0-81f1-f30060511872": "cloudimg-rootfs"
+        }
+
+        replace_uuids_with_labels.side_effect = (
+            lambda content, mapping: content.replace(
+                "root=UUID=b5d8d38f-33ef-49e0-81f1-f30060511872",
+                "root=LABEL=cloudimg-rootfs",
+            )
+        )
+
+        mock_open.side_effect = [
+            mock.mock_open(
+                read_data=(
+                    "linux /boot/vmlinuz-5.15.0-91-generic\n"
+                    "root=UUID=b5d8d38f-33ef-49e0-81f1-f30060511872\n"
+                    "ro console=tty1 console=ttyS0\n"
+                    "initrd /boot/initrd.img-5.15.0-91-generic"
+                )
+            ).return_value,
+            mock.mock_open(
+                read_data=(
+                    "linux /boot/vmlinuz-5.15.0-91-generic\n"
+                    "root=LABEL=cloudimg-rootfs ro console=tty1 console=ttyS0\n"
+                    "initrd /boot/initrd.img-5.15.0-91-generic"
+                )
+            ).return_value,
+            mock.mock_open().return_value,
+        ]
+
+        update_available, message = lib_sysconfig.check_update_grub(tmp_output)
+        self.assertTrue(update_available)
+        self.assertIn("Found available grub updates.", message)
+
+    @mock.patch("lib_sysconfig.filecmp.cmp")
+    @mock.patch("lib_sysconfig.subprocess.check_output")
+    @mock.patch("lib_sysconfig._get_blkid_mapping")
+    @mock.patch("lib_sysconfig._replace_uuids_with_labels")
+    def test_check_update_grub_unavailable(
+        self, replace_uuids_with_labels, get_blkid_mapping, check_output, cmp_file
+    ):
+        """Test check_update_grub function when grub update is unavailable."""
+        tmp_output = "/tmp/tmp_grub.cfg"
+
+        cmp_file.return_value = True
+        get_blkid_mapping.return_value = {
+            "b5d8d38f-33ef-49e0-81f1-f30060511872": "cloudimg-rootfs"
+        }
+        replace_uuids_with_labels.side_effect = (
+            lambda content, mapping: content.replace(
+                "root=UUID=b5d8d38f-33ef-49e0-81f1-f30060511872",
+                "root=LABEL=cloudimg-rootfs",
+            )
+        )
+
+        update_available, message = lib_sysconfig.check_update_grub(tmp_output)
+        self.assertFalse(update_available)
+        self.assertIn("No available grub updates found.", message)
 
 
-@mock.patch("filecmp.cmp")
-@mock.patch("lib_sysconfig.subprocess.check_output")
-def test_check_update_grub_unavailable(check_output, cmp_file):
-    """Test check_update_grub function when grub update unavailable."""
-    tmp_output = "/tmp/tmp_grub.cfg"
+class TestHelperFunctions(unittest.TestCase):
+    @mock.patch("lib_sysconfig.subprocess.check_output")
+    def test_get_blkid_mapping(self, check_output):
+        """Test get_blkid_mapping function."""
+        blkid_output = (
+            '/dev/sda1: UUID="b5d8d38f-33ef-49e0-81f1" LABEL="cloudimg-rootfs" '
+            'TYPE="ext4"\n'
+            '/dev/sda2: UUID="a13ca164-8741-4799-9b77" LABEL="data" TYPE="ext4"\n'
+        )
+        check_output.return_value = blkid_output.encode("utf-8")
 
-    cmp_file.return_value = True
-    update_available, message = lib_sysconfig.check_update_grub(tmp_output)
-    assert update_available is False
-    assert "No available grub updates found." in message
+        expected_mapping = {
+            "b5d8d38f-33ef-49e0-81f1": "cloudimg-rootfs",
+            "a13ca164-8741-4799-9b77": "data",
+        }
+
+        mapping = lib_sysconfig._get_blkid_mapping()
+        self.assertEqual(mapping, expected_mapping)
 
 
 @pytest.mark.parametrize(
