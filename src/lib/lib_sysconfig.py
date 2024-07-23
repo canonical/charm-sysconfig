@@ -141,6 +141,8 @@ def check_update_grub(tmp_output="/tmp/tmp_grub.cfg"):
                 )
             else:
                 message = "No available grub updates found."
+        else:
+            message = "No available grub updates found."
     hookenv.log(message, hookenv.DEBUG)
     return update_available, message
 
