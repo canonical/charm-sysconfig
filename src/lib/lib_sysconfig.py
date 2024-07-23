@@ -122,25 +122,21 @@ def check_update_grub(tmp_output="/tmp/tmp_grub.cfg"):
         update_available = False
         message = "Unable to check update-grub: {}".format(err)
     else:
-        if not filecmp.cmp("/boot/grub/grub.cfg", tmp_output):
-            with open(tmp_output) as f:
-                content = f.read()
+        with open("/boot/grub/grub.cfg") as orig_file:
+            orig_content = orig_file.read()
 
-            blkid_mapping = _get_blkid_mapping()
+        with open(tmp_output) as tmp_file:
+            tmp_content = tmp_file.read()
 
-            content_reformatted = _replace_uuids_with_labels(content, blkid_mapping)
+        orig_reformatted = _replace_refs_with_device_names(orig_content)
+        tmp_reformatted = _replace_refs_with_device_names(tmp_content)
 
-            with open(tmp_output, "w") as f:
-                f.write(content_reformatted)
-
-            if not filecmp.cmp("/boot/grub/grub.cfg", tmp_output):
-                update_available = True
-                message = (
-                    "Found available grub updates. You can run "
-                    "`juju run-action <sysconfig-unit> update-grub` to update grub."
-                )
-            else:
-                message = "No available grub updates found."
+        if orig_reformatted != tmp_reformatted:
+            update_available = True
+            message = (
+                "Found available grub updates. You can run "
+                "`juju run-action <sysconfig-unit> update-grub` to update grub."
+            )
         else:
             message = "No available grub updates found."
     hookenv.log(message, hookenv.DEBUG)
@@ -160,30 +156,25 @@ def clear_notification():
     hookenv.log(message, hookenv.DEBUG)
 
 
-def _get_blkid_mapping():
-    """Fetch the UUID and LABEL mappings using blkid."""
-    blkid_output = subprocess.check_output("blkid", shell=True).decode("utf-8")
-    mapping = {}
-    for line in blkid_output.splitlines():
-        parts = line.split()
-        uuid = None
-        label = None
-        for part in parts[1:]:
-            if part.startswith("UUID="):
-                uuid = part.split("=")[1].strip('"')
-            elif part.startswith("LABEL="):
-                label = part.split("=")[1].strip('"')
-        if uuid and label:
-            mapping[uuid] = label
-    hookenv.log(f"BLKID mapping: {mapping}", hookenv.DEBUG)
-    return mapping
-
-
-def _replace_uuids_with_labels(content, blkid_mapping):
-    """Replace UUIDs in the content with LABELs using the blkid mapping."""
-    for uuid, label in blkid_mapping.items():
-        content = content.replace(f"root=UUID={uuid}", f"root=LABEL={label}")
-    return content
+def _replace_refs_with_device_names(content):
+    """Replace UUIDs and LABELs in the content with device names."""
+    lines = content.splitlines()
+    for i, line in enumerate(lines):
+        if "root=UUID=" in line:
+            uuid = line.split("root=UUID=")[1].split()[0]
+            try:
+                device_name = os.path.basename(os.readlink(f'/dev/disk/by-uuid/{uuid}'))
+                lines[i] = line.replace(f"root=UUID={uuid}", f"root=DEVICE={device_name}")
+            except FileNotFoundError:
+                continue
+        elif "root=LABEL=" in line:
+            label = line.split("root=LABEL=")[1].split()[0]
+            try:
+                device_name = os.path.basename(os.readlink(f'/dev/disk/by-label/{label}'))
+                lines[i] = line.replace(f"root=LABEL={label}", f"root=DEVICE={device_name}")
+            except FileNotFoundError:
+                continue
+    return "\n".join(lines)
 
 
 class BootResourceState:
