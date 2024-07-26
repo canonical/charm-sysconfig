@@ -27,20 +27,16 @@ class TestCheckUpdateGrub(unittest.TestCase):
     @mock.patch(
         "builtins.open", new_callable=mock.mock_open, read_data="original grub content"
     )
-    @mock.patch("lib_sysconfig.filecmp.cmp")
     @mock.patch("lib_sysconfig.subprocess.check_output")
     @mock.patch("lib_sysconfig._replace_refs_with_device_names")
-    def test_check_update_grub_available(
+    def test_check_update_grub(
         self,
         replace_refs_with_device_names,
         check_output,
-        cmp_file,
         mock_open,
     ):
         """Test check_update_grub function when grub update is available."""
         tmp_output = "/tmp/tmp_grub.cfg"
-
-        cmp_file.return_value = False
 
         def replace_refs(content):
             content = content.replace(
@@ -77,6 +73,85 @@ class TestCheckUpdateGrub(unittest.TestCase):
         update_available, message = lib_sysconfig.check_update_grub(tmp_output)
         self.assertTrue(update_available)
         self.assertIn("Found available grub updates.", message)
+
+    @mock.patch(
+        "builtins.open", new_callable=mock.mock_open, read_data="original grub content"
+    )
+    @mock.patch("subprocess.check_output")
+    @mock.patch("os.readlink", return_value="/dev/nvme0n1p2")
+    @mock.patch("os.path.basename", return_value="nvme0n1p2")
+    def test_check_update_grub_no_update(
+        self, mock_basename, mock_readlink, mock_check_output, mock_open
+    ):
+        """Test check_update_grub function when no grub update is available."""
+        tmp_output = "/tmp/tmp_grub.cfg"
+
+        mock_open.side_effect = [
+            mock.mock_open(
+                read_data=(
+                    "linux /boot/vmlinuz-5.15.0-91-generic\n"
+                    "root=UUID=b5d8d38f-33ef-49e0-81f1-f30060511872\n"
+                    "ro console=tty1 console=ttyS0\n"
+                    "initrd /boot/initrd.img-5.15.0-91-generic"
+                )
+            ).return_value,
+            mock.mock_open(
+                read_data=(
+                    "linux /boot/vmlinuz-5.15.0-91-generic\n"
+                    "root=LABEL=cloudimg-rootfs\n"
+                    "ro console=tty1 console=ttyS0\n"
+                    "initrd /boot/initrd.img-5.15.0-91-generic"
+                )
+            ).return_value,
+        ]
+
+        update_available, message = lib_sysconfig.check_update_grub(tmp_output)
+        self.assertFalse(update_available)
+        self.assertIn("No available grub updates found.", message)
+
+    @mock.patch("os.readlink", return_value="/dev/nvme0n1p2")
+    @mock.patch("os.path.basename", return_value="nvme0n1p2")
+    def test_replace_refs_with_device_names_uuid(self, mock_basename, mock_readlink):
+        """Test _replace_refs_with_device_names helper function for UUID."""
+        content = (
+            "linux /boot/vmlinuz-5.15.0-91-generic\n"
+            "root=UUID=b5d8d38f-33ef-49e0-81f1-f30060511872\n"
+            "ro console=tty1 console=ttyS0\n"
+            "initrd /boot/initrd.img-5.15.0-91-generic"
+        )
+
+        result = lib_sysconfig._replace_refs_with_device_names(content)
+
+        expected_result = (
+            "linux /boot/vmlinuz-5.15.0-91-generic\n"
+            "root=DEVICE=nvme0n1p2\n"
+            "ro console=tty1 console=ttyS0\n"
+            "initrd /boot/initrd.img-5.15.0-91-generic"
+        )
+
+        self.assertEqual(result, expected_result)
+
+    @mock.patch("os.readlink", return_value="/dev/nvme0n1p2")
+    @mock.patch("os.path.basename", return_value="nvme0n1p2")
+    def test_replace_refs_with_device_names_label(self, mock_basename, mock_readlink):
+        """Test _replace_refs_with_device_names helper function for LABEL."""
+        content = (
+            "linux /boot/vmlinuz-5.15.0-91-generic\n"
+            "root=LABEL=cloudimg-rootfs\n"
+            "ro console=tty1 console=ttyS0\n"
+            "initrd /boot/initrd.img-5.15.0-91-generic"
+        )
+
+        result = lib_sysconfig._replace_refs_with_device_names(content)
+
+        expected_result = (
+            "linux /boot/vmlinuz-5.15.0-91-generic\n"
+            "root=DEVICE=nvme0n1p2\n"
+            "ro console=tty1 console=ttyS0\n"
+            "initrd /boot/initrd.img-5.15.0-91-generic"
+        )
+
+        self.assertEqual(result, expected_result)
 
 
 @pytest.mark.parametrize(

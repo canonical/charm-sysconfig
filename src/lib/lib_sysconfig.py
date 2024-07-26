@@ -2,7 +2,6 @@
 
 Manage grub, systemd, coufrequtils and kernel version configuration.
 """
-import filecmp
 import hashlib
 import os
 import re
@@ -163,15 +162,21 @@ def _replace_refs_with_device_names(content):
         if "root=UUID=" in line:
             uuid = line.split("root=UUID=")[1].split()[0]
             try:
-                device_name = os.path.basename(os.readlink(f'/dev/disk/by-uuid/{uuid}'))
-                lines[i] = line.replace(f"root=UUID={uuid}", f"root=DEVICE={device_name}")
+                device_name = os.path.basename(os.readlink(f"/dev/disk/by-uuid/{uuid}"))
+                lines[i] = line.replace(
+                    f"root=UUID={uuid}", f"root=DEVICE={device_name}"
+                )
             except FileNotFoundError:
                 continue
         elif "root=LABEL=" in line:
             label = line.split("root=LABEL=")[1].split()[0]
             try:
-                device_name = os.path.basename(os.readlink(f'/dev/disk/by-label/{label}'))
-                lines[i] = line.replace(f"root=LABEL={label}", f"root=DEVICE={device_name}")
+                device_name = os.path.basename(
+                    os.readlink(f"/dev/disk/by-label/{label}")
+                )
+                lines[i] = line.replace(
+                    f"root=LABEL={label}", f"root=DEVICE={device_name}"
+                )
             except FileNotFoundError:
                 continue
     return "\n".join(lines)
