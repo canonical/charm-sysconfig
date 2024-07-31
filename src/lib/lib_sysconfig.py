@@ -127,6 +127,8 @@ def check_update_grub(tmp_output="/tmp/tmp_grub.cfg"):
         with open(tmp_output) as tmp_file:
             tmp_content = tmp_file.read()
 
+        # Normalize file content references to ensure consistent comparison regardless
+        # of whether the files are referenced by UUID or LABEL.
         orig_reformatted = _replace_refs_with_device_names(orig_content)
         tmp_reformatted = _replace_refs_with_device_names(tmp_content)
 
@@ -156,30 +158,45 @@ def clear_notification():
 
 
 def _replace_refs_with_device_names(content):
-    """Replace UUIDs and LABELs in the content with device names."""
+    """Replace UUIDs and LABELs in the content with device names.
+
+    This function scans through the provided content, identifies lines containing
+    "root=UUID=" or "root=LABEL=", and replaces these references with the actual
+    device names found in the system's /dev/disk/by-uuid or /dev/disk/by-label
+    directories.
+
+    :param content (str): The input content containing references to UUIDs or LABELs.
+    :return: str: The modified content with UUIDs and LABELs replaced by corresponding
+    device names.
+    """
     lines = content.splitlines()
-    for i, line in enumerate(lines):
+    output_lines = []
+
+    for line in lines:
         if "root=UUID=" in line:
             uuid = line.split("root=UUID=")[1].split()[0]
             try:
                 device_name = os.path.basename(os.readlink(f"/dev/disk/by-uuid/{uuid}"))
-                lines[i] = line.replace(
-                    f"root=UUID={uuid}", f"root=DEVICE={device_name}"
+                output_lines.append(
+                    line.replace(f"root=UUID={uuid}", f"root=DEVICE={device_name}")
                 )
             except FileNotFoundError:
-                continue
+                output_lines.append(line)
         elif "root=LABEL=" in line:
             label = line.split("root=LABEL=")[1].split()[0]
             try:
                 device_name = os.path.basename(
                     os.readlink(f"/dev/disk/by-label/{label}")
                 )
-                lines[i] = line.replace(
-                    f"root=LABEL={label}", f"root=DEVICE={device_name}"
+                output_lines.append(
+                    line.replace(f"root=LABEL={label}", f"root=DEVICE={device_name}")
                 )
             except FileNotFoundError:
-                continue
-    return "\n".join(lines)
+                output_lines.append(line)
+        else:
+            output_lines.append(line)
+
+    return "\n".join(output_lines)
 
 
 class BootResourceState:
