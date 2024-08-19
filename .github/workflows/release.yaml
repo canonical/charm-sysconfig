@@ -12,6 +12,7 @@ jobs:
     secrets: inherit
   release:
     needs: check
+    runs-on: ${{ matrix.runs-on }}
     strategy:
       fail-fast: false
       matrix:
