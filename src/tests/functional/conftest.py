@@ -19,7 +19,7 @@ from juju_tools import JujuTools
 
 charm_location = os.getenv("CHARM_LOCATION", "..").rstrip("/")
 charm_name = os.getenv("CHARM_NAME", "sysconfig")
-series = ["jammy", "focal"]
+series = ["focal", "jammy"]
 sources = [("local", "{}/{}.charm".format(charm_location, charm_name))]
 
 PRINCIPAL_APP_NAME = "ubuntu-{}"
@@ -62,6 +62,7 @@ async def model(controller):
     subprocess.check_call(["juju", "models"])
     while model_name not in await controller.list_models():
         await asyncio.sleep(1)
+    await _model.set_constraints(constraints=get_constraints())
     yield _model
     await _model.disconnect()
     if not os.getenv("PYTEST_KEEP_MODEL"):
@@ -82,6 +83,16 @@ def source(request):
     return request.param
 
 
+def get_constraints():
+    constraints_str = os.environ.get("TEST_MODEL_CONSTRAINTS", "")
+    constraints = {}
+    constraint_items = constraints_str.split()
+    for constraint_item in constraint_items:
+        constraint_key, constraint_val = constraint_item.split("=")
+        constraints[constraint_key] = constraint_val
+    return constraints
+
+
 @pytest_asyncio.fixture(scope="module", autouse=True)
 async def app(model, series, source, request):
     """Deploy sysconfig app along with a principal ubuntu unit."""
@@ -93,7 +104,6 @@ async def app(model, series, source, request):
     # sysconfig_app = model.applications.get(sysconfig_app_name)
     # if sysconfig_app:
     #     return sysconfig_app
-
     await model.deploy(
         "ubuntu",
         application_name=principal_app_name,

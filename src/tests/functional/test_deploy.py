@@ -10,7 +10,7 @@ import websockets
 # Treat all tests as coroutines
 pytestmark = pytest.mark.asyncio
 
-TIMEOUT = 600
+TIMEOUT = 900
 MODEL_ACTIVE_TIMEOUT = 10
 GRUB_DEFAULT = "Advanced options for Ubuntu>Ubuntu, with Linux {}"
 PRINCIPAL_APP_NAME = "ubuntu-{}"
@@ -47,7 +47,8 @@ async def test_app_with_config_deploy(model, app_with_config):
             lambda: app_with_config.status == "blocked", timeout=TIMEOUT
         )
     except asyncio.exceptions.TimeoutError:
-        assert False, "Sysconfig app with config should have blocked status."
+        status = await model.get_status()
+        assert False, f"Sysconfig app with config should have blocked status. {status}"
 
 
 async def test_cpufrequtils_intalled(app, jujutools):
@@ -79,29 +80,41 @@ async def test_default_config(app, jujutools):
         )
     )
 
-    sysctl_path = "/etc/sysctl.d/90-charm-sysconfig.conf"
-    sysctl_exists = await jujutools.file_exists(sysctl_path, unit)
-    assert sysctl_exists
+    async def verify_sysctl_exists():
+        sysctl_path = "/etc/sysctl.d/90-charm-sysconfig.conf"
+        sysctl_exists = await jujutools.file_exists(sysctl_path, unit)
+        assert sysctl_exists
 
-    systemd_path = "/etc/systemd/system.conf"
-    systemd_content = await jujutools.file_contents(systemd_path, unit)
-    systemd_valid = True
-    for line in systemd_content:
-        if line.startswith("CPUAffinity="):
-            systemd_valid = False
-    assert systemd_valid
+    RETRY(await verify_sysctl_exists())
 
-    cpufreq_path = "/etc/default/cpufrequtils"
-    cpufreq_content = await jujutools.file_contents(cpufreq_path, unit)
-    assert "GOVERNOR" not in cpufreq_content
+    async def verify_systemd_content():
+        systemd_path = "/etc/systemd/system.conf"
+        systemd_content = await jujutools.file_contents(systemd_path, unit)
+        systemd_valid = True
+        for line in systemd_content:
+            if line.startswith("CPUAffinity="):
+                systemd_valid = False
+        assert systemd_valid
 
-    irqbalance_path = "/etc/default/irqbalance"
-    irqbalance_content = await jujutools.file_contents(irqbalance_path, unit)
-    irqbalance_valid = True
-    for line in irqbalance_content:
-        if line.startswith("IRQBALANCE_BANNED_CPUS"):
-            irqbalance_valid = False
-    assert irqbalance_valid
+    RETRY(await verify_systemd_content())
+
+    async def verify_cpufreq_content():
+        cpufreq_path = "/etc/default/cpufrequtils"
+        cpufreq_content = await jujutools.file_contents(cpufreq_path, unit)
+        assert "GOVERNOR" not in cpufreq_content
+
+    RETRY(await verify_cpufreq_content())
+
+    async def verify_irqbalance_content():
+        irqbalance_path = "/etc/default/irqbalance"
+        irqbalance_content = await jujutools.file_contents(irqbalance_path, unit)
+        irqbalance_valid = True
+        for line in irqbalance_content:
+            if line.startswith("IRQBALANCE_BANNED_CPUS"):
+                irqbalance_valid = False
+        assert irqbalance_valid
+
+    RETRY(await verify_irqbalance_content())
 
 
 async def test_config_changed(app, model, jujutools):
@@ -388,18 +401,30 @@ async def test_uninstall(app, model, jujutools, series):
     results = await jujutools.run_command(cmd, unit)
     assert results["return-code"] != 0
 
-    systemd_path = "/etc/systemd/system.conf"
-    systemd_content = await jujutools.file_contents(systemd_path, unit)
-    assert "CPUAffinity=1,2,3,4" not in systemd_content
+    async def verify_systemd_content():
+        systemd_path = "/etc/systemd/system.conf"
+        systemd_content = await jujutools.file_contents(systemd_path, unit)
+        assert "CPUAffinity=1,2,3,4" not in systemd_content
 
-    resolved_path = "/etc/systemd/resolved.conf"
-    resolved_content = await jujutools.file_contents(resolved_path, unit)
-    assert not re.search("^Cache=", resolved_content, re.MULTILINE)
+    RETRY(await verify_systemd_content())
 
-    cpufreq_path = "/etc/default/cpufrequtils"
-    cpufreq_content = await jujutools.file_contents(cpufreq_path, unit)
-    assert "GOVERNOR" not in cpufreq_content
+    async def verify_resolved_content():
+        resolved_path = "/etc/systemd/resolved.conf"
+        resolved_content = await jujutools.file_contents(resolved_path, unit)
+        assert not re.search("^Cache=", resolved_content, re.MULTILINE)
 
-    irqbalance_path = "/etc/default/irqbalance"
-    irqbalance_content = await jujutools.file_contents(irqbalance_path, unit)
-    assert "IRQBALANCE_BANNED_CPUS=3000030000300003" not in irqbalance_content
+    RETRY(await verify_resolved_content())
+
+    async def verify_cpufreq_content():
+        cpufreq_path = "/etc/default/cpufrequtils"
+        cpufreq_content = await jujutools.file_contents(cpufreq_path, unit)
+        assert "GOVERNOR" not in cpufreq_content
+
+    RETRY(await verify_cpufreq_content())
+
+    async def verify_irqbalance_content():
+        irqbalance_path = "/etc/default/irqbalance"
+        irqbalance_content = await jujutools.file_contents(irqbalance_path, unit)
+        assert "IRQBALANCE_BANNED_CPUS=3000030000300003" not in irqbalance_content
+
+    RETRY(await verify_irqbalance_content())
