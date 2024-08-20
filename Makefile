@@ -22,8 +22,6 @@ help:
 	@echo " make submodules-update - update submodules to latest changes on remote branch"
 	@echo " make clean - remove unneeded files and clean charmcraft environment"
 	@echo " make build - build the charm"
-	@echo " make proof - run charm proof"
-	@echo " make release - run clean, build, proof target and upload charm"
 	@echo " make lint - run flake8, black --check and isort --check"
 	@echo " make reformat - run black and isort and reformat files"
 	@echo " make unittests - run the tests defined in the unittest subdirectory"
@@ -33,10 +31,10 @@ help:
 
 dev-environment:
 	@echo "Creating virtualenv with pre-commit installed"
-	@cd src && tox -r -e dev-environment
+	@tox -r -e dev-environment
 
 pre-commit:
-	@cd src && tox -e pre-commit
+	@tox -e pre-commit
 
 submodules:
 	@echo "Cloning submodules"
@@ -60,33 +58,24 @@ build: clean
 	@charmcraft -v pack ${BUILD_ARGS}
 	@bash -c ./rename.sh
 
-proof: build
-	@echo "Running charm proof"
-	@mkdir -p ${CHARM_BUILD_DIR}/${CHARM_NAME}
-	@unzip ${PROJECTPATH}/${CHARM_NAME}.charm -d ${CHARM_BUILD_DIR}/${CHARM_NAME}
-	@charm proof ${CHARM_BUILD_DIR}/${CHARM_NAME}
-release: proof
-	@echo "Releasing charm to ${RELEASE_CHANNEL} channel"
-	@charmcraft upload ${CHARM_NAME}.charm --release ${RELEASE_CHANNEL}
-
 lint:
 	@echo "Running lint checks"
-	@cd src && tox -e lint
+	@tox -e lint
 
 reformat:
 	@echo "Reformat files with black and isort"
-	@cd src && tox -e reformat
+	@tox -e reformat
 
 unittests:
 	@echo "Running unit tests"
-	@cd src && tox -e unit -- ${UNIT_ARGS}
+	@tox -e unit -- ${UNIT_ARGS}
 
 functional: build
 	@echo "Executing functional tests with ${PROJECTPATH}/${CHARM_NAME}.charm"
-	@cd src && CHARM_LOCATION=${PROJECTPATH} tox -e func -- ${FUNC_ARGS}
+	@CHARM_LOCATION=${PROJECTPATH} tox -e func -- ${FUNC_ARGS}
 
-test: lint proof unittests functional
+test: lint unittests functional
 	@echo "Tests completed for charm ${CHARM_NAME}."
 
 # The targets below don't depend on a file
-.PHONY: help dev-environment pre-commit submodules submodules-update clean build lint reformat proof unittests functional
+.PHONY: help dev-environment pre-commit submodules submodules-update clean build lint reformat unittests functional
