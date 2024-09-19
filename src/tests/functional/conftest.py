@@ -17,10 +17,10 @@ import pytest_asyncio
 from juju.controller import Controller
 from juju_tools import JujuTools
 
-charm_location = os.getenv("CHARM_LOCATION", "..").rstrip("/")
-charm_name = os.getenv("CHARM_NAME", "sysconfig")
 series = ["focal", "jammy"]
-sources = [("local", "{}/{}.charm".format(charm_location, charm_name))]
+# NOTE: When the charm is split into multiple bases,
+# this method of getting the charm file needs to be updated.
+sources = [("local", os.getenv("CHARM_PATH_JAMMY"))]
 
 PRINCIPAL_APP_NAME = "ubuntu-{}"
 
