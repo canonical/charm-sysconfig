@@ -10,9 +10,6 @@ parts:
   charm:
     source: src
     plugin: reactive
-    # note (rgildein): This is a tmp solution, the progress of which can be monitored
-    # https://bugs.launchpad.net/charm-bcache-tuning/+bug/1993519
-    build-snaps: [ charm/2.x/stable ]
 
 bases:
   - build-on:
