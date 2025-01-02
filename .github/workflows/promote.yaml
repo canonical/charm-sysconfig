@@ -6,6 +6,11 @@
 name: Promote charm to default track, standard risk levels.
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - "**.md"
+      - "**.rst"
   workflow_dispatch:
     inputs:
       channel-promotion:
@@ -28,10 +33,10 @@ jobs:
           channel_promotion="${{ github.event.inputs.channel-promotion }}"
           origin=$(echo "$channel_promotion" | sed 's/\s*->.*//')
           destination=$(echo "$channel_promotion" | sed 's/.*->\s*//')
-          echo "destination-channel=$destination" >> $GITHUB_OUTPUT
-          echo "origin-channel=$origin" >> $GITHUB_OUTPUT
+          echo "destination-channel=latest/candidate" >> $GITHUB_OUTPUT
+          echo "origin-channel=latest/edge" >> $GITHUB_OUTPUT
       - name: Promote charm to channel
-        uses: canonical/charming-actions/promote-charm@2.6.3
+        uses: jneo8/charming-actions/promote-charm@main
         with:
           credentials: ${{ secrets.CHARMHUB_TOKEN }}
           destination-channel: ${{ steps.set-channels.outputs.destination-channel }}
