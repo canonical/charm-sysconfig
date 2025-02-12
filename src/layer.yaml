@@ -28,4 +28,4 @@ options:
     apt:
         packages:
             - cpufrequtils
-repo: https://git.launchpad.net/charm-sysconfig
+repo: https://github.com/canonical/charm-sysconfig
