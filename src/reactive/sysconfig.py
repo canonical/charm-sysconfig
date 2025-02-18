@@ -93,7 +93,8 @@ def config_changed():
 
     # cpufreq
     if is_flag_set("sysconfig.cpufrequtils-installed") and (
-        syshelper.charm_config.changed("governor") or helpers.any_file_changed([CPUFREQUTILS])
+        syshelper.charm_config.changed("governor")
+        or helpers.any_file_changed([CPUFREQUTILS])
     ):
         syshelper.update_cpufreq()
 

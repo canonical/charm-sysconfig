@@ -666,7 +666,9 @@ class SysConfigHelper:
         and installation was successful.
         """
         apt_update()
-        if subprocess.check_output(['apt-cache', 'search', '--names-only', '^cpufrequtils$']).strip():
+        if subprocess.check_output(
+            ["apt-cache", "search", "--names-only", "^cpufrequtils$"]
+        ).strip():
             apt_install("cpufrequtils", fatal=True)
             return True
         else:
