@@ -1062,7 +1062,7 @@ class TestLib:
 
         mock_file.assert_called_with(lib_sysconfig.SYSCTL_CONF, "w")
         handle = mock_file()
-        handle.write.has_calls(
+        handle.write.assert_has_calls(
             [mock.call("net.ipv4.ip_forward=1\n"), mock.call("vm.swappiness=60\n")]
         )
         check_call.assert_called_with(["sysctl", "-p", lib_sysconfig.SYSCTL_CONF])
