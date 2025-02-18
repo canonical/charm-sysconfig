@@ -60,6 +60,11 @@ def install_sysconfig():
 
     if syshelper.install_cpufrequtils():
         set_flag("sysconfig.cpufrequtils-installed")
+    else:
+        hookenv.log(
+            "cpufrequtils package not found: governor config option will be ignored.",
+            hookenv.WARNING,
+        )
 
     syshelper.install_configured_kernel()
 
