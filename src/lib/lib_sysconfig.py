@@ -659,6 +659,19 @@ class SysConfigHelper:
         apt_install("linux-image-{}".format(configured))
         self.boot_resources.set_resource(KERNEL)
 
+    def install_cpufrequtils(self):
+        """Install cpufrequtils if available.
+
+        Return True if cpufrequtils is available
+        and installation was successful.
+        """
+        apt_update()
+        if subprocess.check_output(['apt-cache', 'search', '--names-only', '^cpufrequtils$']).strip():
+            apt_install("cpufrequtils", fatal=True)
+            return True
+        else:
+            return False
+
     def update_cpufreq(self):
         """Update /etc/default/cpufrequtils and restart cpufrequtils service."""
         if self.governor not in ("", "performance", "powersave"):

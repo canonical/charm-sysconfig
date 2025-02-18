@@ -58,8 +58,14 @@ def install_sysconfig():
         hookenv.status_set("blocked", "configuration parameters not valid.")
         return
 
+    if syshelper.install_cpufrequtils():
+        set_flag("sysconfig.cpufrequtils-installed")
+
     syshelper.install_configured_kernel()
-    syshelper.update_cpufreq()
+
+    if is_flag_set("sysconfig.cpufrequtils-installed"):
+        syshelper.update_cpufreq()
+
     syshelper.update_grub_file()
     syshelper.update_systemd_system_file()
     syshelper.update_systemd_resolved()
@@ -86,8 +92,8 @@ def config_changed():
         syshelper.install_configured_kernel()
 
     # cpufreq
-    if syshelper.charm_config.changed("governor") or helpers.any_file_changed(
-        [CPUFREQUTILS]
+    if is_flag_set("sysconfig.cpufrequtils-installed") and (
+        syshelper.charm_config.changed("governor") or helpers.any_file_changed([CPUFREQUTILS])
     ):
         syshelper.update_cpufreq()
 
@@ -215,7 +221,10 @@ def remove_configuration():
     """
     hookenv.status_set("maintenance", "removing sysconfig configurations")
     syshelper = SysConfigHelper()
-    syshelper.remove_cpufreq_configuration()
+
+    if is_flag_set("sysconfig.cpufrequtils-installed"):
+        syshelper.remove_cpufreq_configuration()
+
     syshelper.remove_grub_configuration()
     syshelper.remove_systemd_configuration()
     syshelper.remove_resolved_configuration()
