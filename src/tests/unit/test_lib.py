@@ -1101,3 +1101,39 @@ class TestLib:
         )
 
         restart.assert_called()
+
+    @mock.patch("lib_sysconfig.apt_install")
+    @mock.patch("lib_sysconfig.apt_update")
+    @mock.patch("lib_sysconfig.subprocess")
+    @mock.patch("lib_sysconfig.hookenv.config")
+    def test_install_cpufrequtils_success(
+        self, _mock_config, mock_subprocess, mock_apt_update, mock_apt_install
+    ):
+        """Verify it does install cpufrequtils when it's available."""
+        mock_subprocess.check_output.return_value = (
+            "cpufrequtils - utilities to deal with the cpufreq Linux kernel feature"
+        )
+        sysh = lib_sysconfig.SysConfigHelper()
+
+        result = sysh.install_cpufrequtils()
+
+        assert result is True
+        mock_apt_update.assert_called_once_with()
+        mock_apt_install.assert_called_once_with("cpufrequtils", fatal=True)
+
+    @mock.patch("lib_sysconfig.apt_install")
+    @mock.patch("lib_sysconfig.apt_update")
+    @mock.patch("lib_sysconfig.subprocess")
+    @mock.patch("lib_sysconfig.hookenv.config")
+    def test_install_cpufrequtils_not_found(
+        self, _mock_config, mock_subprocess, mock_apt_update, mock_apt_install
+    ):
+        """Verify it doesn't install cpufrequtils when it's not available."""
+        mock_subprocess.check_output.return_value = ""
+        sysh = lib_sysconfig.SysConfigHelper()
+
+        result = sysh.install_cpufrequtils()
+
+        assert result is False
+        mock_apt_update.assert_called_once_with()
+        mock_apt_install.assert_not_called()
