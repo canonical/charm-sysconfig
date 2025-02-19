@@ -163,6 +163,9 @@ options:
                         Recommended option when Bios control power is set to the OS.
         - 'performance'
         - 'powersave'
+
+        On some architectures, cpufrequtils is not available.
+        In these cases, this config option will be ignored.
   resolved-cache-mode:
     type: string
     default: ""
