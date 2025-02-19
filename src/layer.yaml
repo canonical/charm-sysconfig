@@ -25,7 +25,4 @@ options:
         include_system_packages: true
         packages:
             - python3-yaml
-    apt:
-        packages:
-            - cpufrequtils
 repo: https://github.com/canonical/charm-sysconfig
