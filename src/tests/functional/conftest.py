@@ -18,9 +18,6 @@ from juju.controller import Controller
 from juju_tools import JujuTools
 
 series = ["focal", "jammy"]
-# NOTE: When the charm is split into multiple bases,
-# this method of getting the charm file needs to be updated.
-sources = [("local", os.getenv("CHARM_PATH_JAMMY"))]
 
 PRINCIPAL_APP_NAME = "ubuntu-{}"
 
@@ -77,12 +74,6 @@ def series(request):
     return request.param
 
 
-@pytest_asyncio.fixture(scope="module", params=sources, ids=[s[0] for s in sources])
-def source(request):
-    """Return source of the charm under test (i.e. local, cs)."""
-    return request.param
-
-
 def get_constraints():
     constraints_str = os.environ.get("TEST_MODEL_CONSTRAINTS", "")
     constraints = {}
@@ -94,10 +85,10 @@ def get_constraints():
 
 
 @pytest_asyncio.fixture(scope="module", autouse=True)
-async def app(model, series, source, request):
+async def app(model, series, request):
     """Deploy sysconfig app along with a principal ubuntu unit."""
     channel = "stable"
-    sysconfig_app_name = "sysconfig-{}-{}".format(series, source[0])
+    sysconfig_app_name = "sysconfig-{}".format(series)
     principal_app_name = PRINCIPAL_APP_NAME.format(series)
 
     # uncomment if app is already deployed while re-testing on same model
@@ -117,7 +108,7 @@ async def app(model, series, source, request):
     force = True if request.node.get_closest_marker("xfail") else False
 
     sysconfig_app = await model.deploy(
-        source[1],
+        os.getenv(f"CHARM_PATH_{series.upper()}"),
         application_name=sysconfig_app_name,
         series=series,
         force=force,
@@ -134,12 +125,10 @@ async def app(model, series, source, request):
 
 
 @pytest_asyncio.fixture(scope="module", autouse=True)
-async def app_with_config(model, series, source):
+async def app_with_config(model, series):
     """Deploy sysconfig app + config along with a principal ubuntu unit."""
     channel = "stable"
-    sysconfig_app_with_config_name = "sysconfig-{}-{}-with-config".format(
-        series, source[0]
-    )
+    sysconfig_app_with_config_name = "sysconfig-{}-with-config".format(series)
     principal_app_name = PRINCIPAL_APP_NAME.format(series)
     principal_app_with_config_name = principal_app_name + "-with-config"
 
@@ -163,7 +152,7 @@ async def app_with_config(model, series, source):
         "governor": "powersave",
     }
     sysconfig_app_with_config = await model.deploy(
-        source[1],
+        os.getenv(f"CHARM_PATH_{series.upper()}"),
         application_name=sysconfig_app_with_config_name,
         series=series,
         num_units=0,
