@@ -22,7 +22,4 @@ includes:
 options:
     basic:
         use_venv: true
-        include_system_packages: true
-        packages:
-            - python3-yaml
 repo: https://github.com/canonical/charm-sysconfig
