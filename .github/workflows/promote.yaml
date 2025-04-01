@@ -36,7 +36,7 @@ jobs:
           echo "destination-channel=latest/candidate" >> $GITHUB_OUTPUT
           echo "origin-channel=latest/edge" >> $GITHUB_OUTPUT
       - name: Promote charm to channel
-        uses: jneo8/charming-actions/promote-charm@main
+        uses: canonical/charming-actions/promote-charm@2.7.0
         with:
           credentials: ${{ secrets.CHARMHUB_TOKEN }}
           destination-channel: ${{ steps.set-channels.outputs.destination-channel }}
