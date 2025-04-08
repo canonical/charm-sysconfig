@@ -1,4 +1,5 @@
 """Helper class to run command in a unit under test."""
+
 import base64
 import pickle
 import re
@@ -24,11 +25,7 @@ class JujuTools:
         :param cmd: Command to be run
         :param unit: Unit object or unit name string
         """
-        unit = (
-            target
-            if isinstance(target, juju.unit.Unit)
-            else await self.get_unit(target)
-        )
+        unit = target if isinstance(target, juju.unit.Unit) else await self.get_unit(target)
         action = await unit.run(cmd)
         await action.wait()
         return action.results
@@ -45,9 +42,7 @@ class JujuTools:
             "import pickle;"
             "import base64;"
             "{}"
-            'print(base64.b64encode(pickle.dumps({})), end="")'.format(
-                imports, remote_cmd
-            )
+            'print(base64.b64encode(pickle.dumps({})), end="")'.format(imports, remote_cmd)
         )
         cmd = python3.format(python_cmd)
         results = await self.run_command(cmd, target)
@@ -85,9 +80,7 @@ class JujuTools:
         result = await self.run_command(cmd, target)
         return result["stdout"]
 
-    async def check_file_contents(
-        self, path, target, expected_contents, assert_in=True
-    ):
+    async def check_file_contents(self, path, target, expected_contents, assert_in=True):
         """Check if a file contains or not from what is expected.
 
         :param path: File path
