@@ -1,7 +1,15 @@
 #!/usr/bin/python3
+import sys
+from os.path import abspath, dirname, join
 from unittest import mock
 
 import pytest
+
+TEST_DIR = dirname(abspath(__file__))
+PROJECT_ROOT_DIR = dirname(dirname(TEST_DIR))
+CHARM_DIR = join(PROJECT_ROOT_DIR, "src")
+LIB_DIR = join(CHARM_DIR, "lib")
+sys.path.append(LIB_DIR)
 
 
 # If layer options are used, add this to sysconfig
@@ -31,7 +39,7 @@ def mock_hookenv_config(monkeypatch):
 
     def mock_config():
         cfg = {}
-        yml = yaml.safe_load(open("./config.yaml"))
+        yml = yaml.safe_load(open(join(CHARM_DIR, "./config.yaml")))
 
         # Load all defaults
         for key, value in yml["options"].items():
