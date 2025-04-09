@@ -134,7 +134,7 @@ jobs:
         test-command: ['tox -e func']
         juju-channel: ["3.4/stable"]
         exclude:
-          - runs-on: [self-hosted, linux, s390x]
+          - runs-on: [self-hosted, linux, s390x]  # setup-python action does not support s390x arch
     steps:
       - uses: actions/checkout@v4
         with:
