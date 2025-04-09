@@ -115,9 +115,7 @@ async def app(model, series, request):
         num_units=0,
     )
     await asyncio.gather(
-        sysconfig_app.add_relation(
-            "juju-info", "{}:juju-info".format(principal_app_name)
-        ),
+        sysconfig_app.add_relation("juju-info", "{}:juju-info".format(principal_app_name)),
         sysconfig_app.set_config({"enable-container": "true"}),
     )
 

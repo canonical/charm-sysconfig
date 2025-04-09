@@ -98,8 +98,7 @@ def config_changed():
 
     # cpufreq
     if is_flag_set("sysconfig.cpufrequtils-installed") and (
-        syshelper.charm_config.changed("governor")
-        or helpers.any_file_changed([CPUFREQUTILS])
+        syshelper.charm_config.changed("governor") or helpers.any_file_changed([CPUFREQUTILS])
     ):
         syshelper.update_cpufreq()
 
@@ -152,9 +151,9 @@ def config_changed():
         syshelper.update_sysctl()
 
     # irqbalance
-    if syshelper.charm_config.changed(
-        "irqbalance-banned-cpus"
-    ) or helpers.any_file_changed([IRQBALANCE_CONF]):
+    if syshelper.charm_config.changed("irqbalance-banned-cpus") or helpers.any_file_changed(
+        [IRQBALANCE_CONF]
+    ):
         syshelper.update_irqbalance()
 
     update_status()
@@ -181,9 +180,7 @@ def update_status():
         return
 
     resources = [KERNEL, SYSTEMD_SYSTEM]
-    boot_changes = SysConfigHelper.boot_resources.resources_changed_since_boot(
-        resources
-    )
+    boot_changes = SysConfigHelper.boot_resources.resources_changed_since_boot(resources)
 
     # This check compares the existing grub conf file with the
     # one newly generated using grub-mkconfig in order to

@@ -43,9 +43,7 @@ async def test_app_deploy(model, app):
 async def test_app_with_config_deploy(model, app_with_config):
     """Check if status of sysconfig app is "blocked" if deployed along with config."""
     try:
-        await model.block_until(
-            lambda: app_with_config.status == "blocked", timeout=TIMEOUT
-        )
+        await model.block_until(lambda: app_with_config.status == "blocked", timeout=TIMEOUT)
     except asyncio.exceptions.TimeoutError:
         status = await model.get_status()
         assert False, f"Sysconfig app with config should have blocked status. {status}"
@@ -202,11 +200,7 @@ async def test_config_changed(app, model, jujutools):
     ]
 
     systemd_path = "/etc/systemd/system.conf"
-    RETRY(
-        await jujutools.check_file_contents(
-            systemd_path, unit, expected_contents_systemd
-        )
-    )
+    RETRY(await jujutools.check_file_contents(systemd_path, unit, expected_contents_systemd))
 
     RETRY(
         await jujutools.check_file_contents(
@@ -216,11 +210,7 @@ async def test_config_changed(app, model, jujutools):
 
     cpufreq_path = "/etc/default/cpufrequtils"
     expected_cpufreq_content = ["GOVERNOR=powersave"]
-    RETRY(
-        await jujutools.check_file_contents(
-            cpufreq_path, unit, expected_cpufreq_content
-        )
-    )
+    RETRY(await jujutools.check_file_contents(cpufreq_path, unit, expected_cpufreq_content))
 
     # test new kernel installed
     for pkg in (linux_pkg, linux_modules_extra_pkg):
@@ -235,11 +225,7 @@ async def test_config_changed(app, model, jujutools):
 
     expected_irqbalance_content = ["IRQBALANCE_BANNED_CPUS=3000030000300003"]
     irqbalance_path = "/etc/default/irqbalance"
-    RETRY(
-        await jujutools.check_file_contents(
-            irqbalance_path, unit, expected_irqbalance_content
-        )
-    )
+    RETRY(await jujutools.check_file_contents(irqbalance_path, unit, expected_irqbalance_content))
 
     # test update-status show that update-grub and reboot is required, since
     # "grub-config-flags" is changed and "update-grub" is set to false by
@@ -324,9 +310,7 @@ async def test_set_resolved_cache(app, model, jujutools, cache_setting):
     # NOTE: app.set_config() doesn't seem to wait for the model to go to a
     # non-active/idle state.
     try:
-        await model.block_until(
-            lambda: not is_model_settled(), timeout=MODEL_ACTIVE_TIMEOUT
-        )
+        await model.block_until(lambda: not is_model_settled(), timeout=MODEL_ACTIVE_TIMEOUT)
     except websockets.ConnectionClosed:
         # It's possible (although unlikely) that we missed the charm transitioning from
         # idle to active and back.
@@ -359,9 +343,7 @@ async def test_set_sysctl(app, model, jujutools, sysctl):
     # NOTE: app.set_config() doesn't seem to wait for the model to go to a
     # non-active/idle state.
     try:
-        await model.block_until(
-            lambda: not is_model_settled(), timeout=MODEL_ACTIVE_TIMEOUT
-        )
+        await model.block_until(lambda: not is_model_settled(), timeout=MODEL_ACTIVE_TIMEOUT)
     except websockets.ConnectionClosed:
         # It's possible (although unlikely) that we missed the charm transitioning from
         # idle to active and back.

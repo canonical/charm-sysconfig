@@ -24,9 +24,7 @@ def test_check_update_grub_error(check_output, cmp_file):
 
 
 class TestCheckUpdateGrub(unittest.TestCase):
-    @mock.patch(
-        "builtins.open", new_callable=mock.mock_open, read_data="original grub content"
-    )
+    @mock.patch("builtins.open", new_callable=mock.mock_open, read_data="original grub content")
     @mock.patch("lib_sysconfig.subprocess.check_output")
     @mock.patch("lib_sysconfig._replace_refs_with_device_names")
     def test_check_update_grub(
@@ -74,9 +72,7 @@ class TestCheckUpdateGrub(unittest.TestCase):
         self.assertTrue(update_available)
         self.assertIn("Found available grub updates.", message)
 
-    @mock.patch(
-        "builtins.open", new_callable=mock.mock_open, read_data="original grub content"
-    )
+    @mock.patch("builtins.open", new_callable=mock.mock_open, read_data="original grub content")
     @mock.patch("subprocess.check_output")
     @mock.patch("os.readlink", return_value="/dev/nvme0n1p2")
     @mock.patch("os.path.basename", return_value="nvme0n1p2")
@@ -271,9 +267,7 @@ class TestBootResourceState:
         mock_boot_time.return_value = self.datetime - timedelta(1)
         boot_resource = self.boot_resource()
         with NamedTemporaryFile() as ftmp:
-            with mock.patch.object(
-                boot_resource, "calculate_resource_sha256sum"
-            ) as mock_calc:
+            with mock.patch.object(boot_resource, "calculate_resource_sha256sum") as mock_calc:
                 mock_calc.return_value = "1234"
                 changed = boot_resource.resources_changed_since_boot([ftmp.name])
                 assert not changed
@@ -284,9 +278,7 @@ class TestBootResourceState:
         mock_boot_time.return_value = self.datetime - timedelta(1)
         boot_resource = self.boot_resource()
         with NamedTemporaryFile() as ftmp:
-            with mock.patch.object(
-                boot_resource, "calculate_resource_sha256sum"
-            ) as mock_calc:
+            with mock.patch.object(boot_resource, "calculate_resource_sha256sum") as mock_calc:
                 mock_calc.return_value = "2345"
                 changed = boot_resource.resources_changed_since_boot([ftmp.name])
                 assert changed
@@ -301,9 +293,7 @@ class TestBootResourceState:
         mock_clear_notification_time.return_value = self.datetime + timedelta(1)
         boot_resource = self.boot_resource()
         with NamedTemporaryFile() as ftmp:
-            with mock.patch.object(
-                boot_resource, "calculate_resource_sha256sum"
-            ) as mock_calc:
+            with mock.patch.object(boot_resource, "calculate_resource_sha256sum") as mock_calc:
                 mock_calc.return_value = "2345"
                 changed = boot_resource.resources_changed_since_boot([ftmp.name])
                 assert not changed
@@ -377,9 +367,7 @@ class TestLib:
     @mock.patch("lib_sysconfig.hookenv.config")
     @mock.patch("lib_sysconfig.host.service_restart")
     @mock.patch("lib_sysconfig.render")
-    def test_update_cpufreq_governor_not_available(
-        self, render, restart, config, check_call
-    ):
+    def test_update_cpufreq_governor_not_available(self, render, restart, config, check_call):
         """Set wrong governor.
 
         Expect /etc/default/cpufrequtils is not rendered
@@ -431,8 +419,7 @@ class TestLib:
                 "GRUB_TIMEOUT": "0",
                 "TEST_KEY": '"TEST VALUE, WITH COMMA"',
             },
-            "grub_default": "Advanced options for Ubuntu>Ubuntu, "
-            "with Linux 4.15.0-38-generic",
+            "grub_default": "Advanced options for Ubuntu>Ubuntu, " "with Linux 4.15.0-38-generic",
         }
 
         sysh = lib_sysconfig.SysConfigHelper()
@@ -450,9 +437,7 @@ class TestLib:
     @mock.patch("lib_sysconfig.hookenv.config")
     @mock.patch("lib_sysconfig.hookenv.log")
     @mock.patch("lib_sysconfig.render")
-    def test_grub_legacy_reservation(
-        self, render, log, config, check_call, is_container
-    ):
+    def test_grub_legacy_reservation(self, render, log, config, check_call, is_container):
         """Update /etc/default/grub.d/90-sysconfig.cfg and update-grub true.
 
         Expect file is rendered with correct config and updated-grub is called.
@@ -486,8 +471,7 @@ class TestLib:
                 "GRUB_TIMEOUT": "0",
                 "TEST_KEY": '"TEST VALUE, WITH COMMA"',
             },
-            "grub_default": "Advanced options for Ubuntu>Ubuntu, "
-            "with Linux 4.15.0-38-generic",
+            "grub_default": "Advanced options for Ubuntu>Ubuntu, " "with Linux 4.15.0-38-generic",
         }
 
         sysh = lib_sysconfig.SysConfigHelper()
@@ -505,9 +489,7 @@ class TestLib:
     @mock.patch("lib_sysconfig.hookenv.config")
     @mock.patch("lib_sysconfig.hookenv.log")
     @mock.patch("lib_sysconfig.render")
-    def test_legacy_grub_config_flags(
-        self, render, log, config, check_call, is_container
-    ):
+    def test_legacy_grub_config_flags(self, render, log, config, check_call, is_container):
         """Update /etc/default/grub.d/90-sysconfig.cfg and update-grub true.
 
         Expect file is rendered with correct config and updated-grub is called.
@@ -523,8 +505,7 @@ class TestLib:
             "enable-pti": "",
             "enable-iommu": False,
             "enable-tsx": False,
-            "config-flags": "{ 'grub': 'GRUB_TIMEOUT=0, "
-            "TEST=line with space, and comma'}",
+            "config-flags": "{ 'grub': 'GRUB_TIMEOUT=0, " "TEST=line with space, and comma'}",
             "grub-config-flags": "",
             "kernel-version": "",
             "update-grub": True,
@@ -580,8 +561,7 @@ class TestLib:
             "iommu": True,
             "tsx": True,
             "grub_config_flags": {"GRUB_TIMEOUT": "0", "TEST": '"one,two,three, four"'},
-            "grub_default": "Advanced options for Ubuntu>Ubuntu, "
-            "with Linux 4.15.0-38-generic",
+            "grub_default": "Advanced options for Ubuntu>Ubuntu, " "with Linux 4.15.0-38-generic",
             "enable_pti": "off",
         }
 
@@ -599,9 +579,7 @@ class TestLib:
     @mock.patch("lib_sysconfig.hookenv.config")
     @mock.patch("lib_sysconfig.hookenv.log")
     @mock.patch("lib_sysconfig.render")
-    def test_update_grub_file_no_update_grub_deprecate(
-        self, render, log, config, check_call
-    ):
+    def test_update_grub_file_no_update_grub_deprecate(self, render, log, config, check_call):
         """Update /etc/default/grub.d/90-sysconfig.cfg and update-grub false.
 
         Expect file is rendered with correct config and updated-grub is not called.
@@ -631,8 +609,7 @@ class TestLib:
             "iommu": True,
             "tsx": True,
             "grub_config_flags": {"GRUB_TIMEOUT": "0", "TEST": '"one,two,three, four"'},
-            "grub_default": "Advanced options for Ubuntu>Ubuntu, "
-            "with Linux 4.15.0-38-generic",
+            "grub_default": "Advanced options for Ubuntu>Ubuntu, " "with Linux 4.15.0-38-generic",
             "enable_pti": "off",
         }
 
@@ -827,9 +804,7 @@ class TestLib:
         sysh = lib_sysconfig.SysConfigHelper()
         sysh.install_configured_kernel()
 
-        apt_install.assert_any_call(
-            "linux-modules-extra-{}".format("4.15.0-38-generic")
-        )
+        apt_install.assert_any_call("linux-modules-extra-{}".format("4.15.0-38-generic"))
         apt_install.assert_any_call("linux-image-{}".format("4.15.0-38-generic"))
 
     @mock.patch("lib_sysconfig.apt_install")
@@ -851,9 +826,7 @@ class TestLib:
         sysh = lib_sysconfig.SysConfigHelper()
         sysh.install_configured_kernel()
 
-        apt_install.assert_called_with(
-            "linux-modules-extra-{}".format("4.15.0-38-generic")
-        )
+        apt_install.assert_called_with("linux-modules-extra-{}".format("4.15.0-38-generic"))
 
     @mock.patch("lib_sysconfig.apt_install")
     @mock.patch("lib_sysconfig.apt_update")
@@ -961,9 +934,7 @@ class TestLib:
     @mock.patch("lib_sysconfig.host.service_restart")
     @mock.patch("lib_sysconfig.subprocess.call")
     @mock.patch("lib_sysconfig.hookenv.log")
-    def test_remove_cpufreq_configuration_xenial(
-        self, log, check_call, restart, render, config
-    ):
+    def test_remove_cpufreq_configuration_xenial(self, log, check_call, restart, render, config):
         """Test remove cpufrequtlis configuration.
 
         Expect config is rendered with empty context.
@@ -1017,9 +988,7 @@ class TestLib:
     @mock.patch("lib_sysconfig.hookenv.config")
     @mock.patch("lib_sysconfig.host.service_restart")
     @mock.patch("lib_sysconfig.render")
-    def test_update_resolved_file_unchanged(
-        self, render, restart, config, file_changed
-    ):
+    def test_update_resolved_file_unchanged(self, render, restart, config, file_changed):
         """systemd-resolved is not restarted when the config file is unchanged."""
         file_changed.return_value = False
         self._test_update_resolved_common(render, config)
@@ -1077,9 +1046,7 @@ class TestLib:
         hookenv.log.assert_called_once_with(
             "Error parsing sysctl YAML: {invalid", level=hookenv.ERROR
         )
-        hookenv.status_set.assert_called_once_with(
-            "blocked", "Error parsing sysctl YAML"
-        )
+        hookenv.status_set.assert_called_once_with("blocked", "Error parsing sysctl YAML")
 
     @mock.patch("lib_sysconfig.host.service_restart")
     @mock.patch("lib_sysconfig.hookenv.config")
