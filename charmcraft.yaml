@@ -11,6 +11,9 @@ parts:
     source: src
     plugin: reactive
     build-snaps: [charm]
+    reactive-charm-build-arguments:
+      - --binary-wheels
+      - -v
 
 platforms:
   ubuntu@20.04:amd64:
