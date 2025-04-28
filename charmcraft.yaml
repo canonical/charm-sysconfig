@@ -11,6 +11,10 @@ parts:
     source: src
     plugin: reactive
     build-snaps: [charm]
+    # Workaround for https://github.com/canonical/charmcraft/issues/2259
+    reactive-charm-build-arguments:
+      - --binary-wheels
+      - -v
 
 platforms:
   ubuntu@20.04:amd64:
@@ -19,3 +23,5 @@ platforms:
   ubuntu@22.04:arm64:
   ubuntu@20.04:s390x:
   ubuntu@22.04:s390x:
+  ubuntu@20.04:ppc64el:
+  ubuntu@22.04:ppc64el:
