@@ -8,13 +8,12 @@ type: charm
 
 parts:
   charm:
-    source: src
+    source: .
+    source-subdir: src
+    build-environment:
+    - PIP_CONSTRAINT: $CRAFT_PART_BUILD_WORK/constraints.txt
     plugin: reactive
     build-snaps: [charm]
-    # Workaround for https://github.com/canonical/charmcraft/issues/2259
-    reactive-charm-build-arguments:
-      - --binary-wheels
-      - -v
 
 platforms:
   ubuntu@20.04:amd64:

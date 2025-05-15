@@ -1,0 +1,2 @@
+# See https://github.com/canonical/charmcraft/issues/2259#issuecomment-2842766428
+setuptools_scm < 8.2.0
