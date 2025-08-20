@@ -126,6 +126,9 @@ async def test_config_changed(app, model, jujutools):
     elif "jammy" in app.entity_id:
         # similarly override kernel_version for jammy
         kernel_version = "5.15.0-25-generic"
+    elif "noble" in app.entity_id:
+        # similarly override kernel_version for noble
+        kernel_version = "6.8.0-31-generic"
     linux_pkg = "linux-image-{}".format(kernel_version)
     linux_modules_extra_pkg = "linux-modules-extra-{}".format(kernel_version)
 
