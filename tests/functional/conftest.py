@@ -17,7 +17,7 @@ import pytest_asyncio
 from juju.controller import Controller
 from juju_tools import JujuTools
 
-series = ["focal", "jammy"]
+series = ["focal", "jammy", "noble"]
 
 PRINCIPAL_APP_NAME = "ubuntu-{}"
 

@@ -1,1 +1,6 @@
 netifaces
+
+setuptools
+git+https://github.com/juju/charm-helpers.git@master#egg=charmhelpers
+hatchling;python_version == '3.12'
+calver;python_version == '3.12'
